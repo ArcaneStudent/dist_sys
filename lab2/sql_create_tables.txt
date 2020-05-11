@@ -1,0 +1,22 @@
+CREATE SEQUENCE serial START 101;
+CREATE TABLE hotel_booking (
+  id INTEGER PRIMARY KEY DEFAULT NEXTVAL('serial'),
+  client_name CHAR(64),
+  hotel_name CHAR(64),
+  arrival DATE,
+  departure DATE);
+
+INSERT INTO hotel_booking (client_name, hotel_name, arrival, departure)
+VALUES ('Nik', 'Hilton', '01-05-2015', '07-05-2015'); 
+
+CREATE SEQUENCE serial START 101;
+CREATE TABLE fly_booking (
+  id INTEGER PRIMARY KEY DEFAULT NEXTVAL('serial'),
+  client_name CHAR(64),
+  fly_number CHAR(64),
+  code_from CHAR(64),
+  code_to CHAR(64),
+  fly_date DATE);
+
+INSERT INTO fly_booking (client_name, fly_number, code_from, code_to, fly_date)
+VALUES ('Nik', 'KLM 1382', 'KBP', 'AMS', '01-05-2015'); 
