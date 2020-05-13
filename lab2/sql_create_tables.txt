@@ -20,3 +20,16 @@ CREATE TABLE fly_booking (
 
 INSERT INTO fly_booking (client_name, fly_number, code_from, code_to, fly_date)
 VALUES ('Nik', 'KLM 1382', 'KBP', 'AMS', '01-05-2015'); 
+
+CREATE SEQUENCE serial2 START 101;
+CREATE TABLE bank (
+  id INTEGER PRIMARY KEY DEFAULT NEXTVAL('serial2'),
+  client_name CHAR(64),
+  amount int CHECK (amount > 0)
+  );
+
+INSERT INTO bank (client_name, amount)
+VALUES ('Nik', 200);
+
+INSERT INTO bank (client_name, amount)
+VALUES ('Anton', 200);
