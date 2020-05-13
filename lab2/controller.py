@@ -80,10 +80,10 @@ class Controller:
                 bank_cursor.execute("""
                     UPDATE bank SET amount = amount - {} 
                     WHERE client_name='{}';""".format(price, client_name))
-                self.fly_con.commit()
-                self.hotel_con.commit()
-                self.bank_con.commit()
-                print("!OK")
+            self.fly_con.commit()
+            self.hotel_con.commit()
+            self.bank_con.commit()
+            print("!OK")
         except:
             self.fly_con.rollback()
             self.hotel_con.rollback()
