@@ -62,7 +62,7 @@ class Controller:
         for line in answer_bank:
             print("\t".join(map(lambda x: str(x).strip(), line)))
     
-    def prepare(self, hotel_data, fly_data):
+    def do_transaction(self, hotel_data, fly_data, price=100):
         client_name, hotel_name, arrival, departure = hotel_data
         with self.hotel_con.cursor() as hotel_cursor:
             hotel_cursor.execute("""
@@ -79,37 +79,29 @@ class Controller:
             """.format(client_name, fly_number, code_from, code_to, fly_date)
             )
         self.prepared = True
-    
-    def bank_process(self, price=100, client_name='Anton'):
-        with self.bank_con.cursor() as bank_cursor:
-            bank_cursor.execute("SELECT amount FROM bank WHERE client_name='{}';".format(client_name))
-            answer_bank = bank_cursor.fetchone()
-
-        self.bank_con.rollback()
-        current_balance = answer_bank[0]
 
         try:
             with self.bank_con.cursor() as bank_cursor:
-                bank_cursor.execute("""UPDATE bank SET amount = {}
-                                    WHERE client_name='{}';""".format(current_balance - price, client_name))
-                self.bank_con.commit()
+                bank_cursor.execute("""
+                    UPDATE bank SET amount = amount - {} 
+                    WHERE client_name='{}';""".format(price, client_name))
                 self.commit()
                 print("!OK")
         except:
-            self.bank_con.rollback()
+            
             self.rollback()
             print("!ERROR happens!") 
-        
-                
     
     def commit(self):
         self.fly_con.commit()
         self.hotel_con.commit()
+        self.bank_con.commit()
         self.prepared = False
     
     def rollback(self):
         self.fly_con.rollback()
         self.hotel_con.rollback()
+        self.bank_con.rollback()
         self.prepared = False
     
     def remove_row(self, client_name, amount=200):
@@ -136,13 +128,10 @@ if __name__ == "__main__":
     commit_controller = Controller(user=user, password=password)
     commit_controller.show_tables()
     
-    print("===> Preparing changes...")
+    print("===> Doing transaction...")
     hotel_data = 'Anton', 'Kiev', '6-05-2020', '12-05-2020'
     fly_data = 'Anton', 'KVV 1482', 'KWW', 'KV', '6-05-2020'
-    commit_controller.prepare(hotel_data, fly_data)
-    
-    print("===> Bank operations...")
-    commit_controller.bank_process(price=100, client_name='Anton')
+    commit_controller.do_transaction(hotel_data, fly_data, price=100)
     commit_controller.show_tables()
     commit_controller.remove_row(client_name='Anton', amount=200)
     print("===> Exiting...")
