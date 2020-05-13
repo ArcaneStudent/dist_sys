@@ -59,32 +59,23 @@ class Controller:
             print("\t".join(map(lambda x: str(x).strip(), line)))
     
     def do_transaction(self, hotel_data, fly_data, price=100):
-        client_name, hotel_name, arrival, departure = hotel_data
         try:
+            client_name, hotel_name, arrival, departure = hotel_data
             with self.hotel_con.cursor() as hotel_cursor:
                 hotel_cursor.execute("""
                 INSERT INTO hotel_booking (client_name, hotel_name, arrival, departure)
                 VALUES ('{}', '{}', '{}', '{}');
                 """.format(client_name, hotel_name, arrival, departure)
                 )
-        except:
-            self.hotel_con.rollback()
-            return
 
-        client_name, fly_number, code_from, code_to, fly_date = fly_data
-        try:
+            client_name, fly_number, code_from, code_to, fly_date = fly_data
             with self.fly_con.cursor() as fly_cursor:
                 fly_cursor.execute("""
                 INSERT INTO fly_booking (client_name, fly_number, code_from, code_to, fly_date)
                 VALUES ('{}', '{}', '{}', '{}', '{}');
                 """.format(client_name, fly_number, code_from, code_to, fly_date)
                 )
-        except:
-            self.hotel_con.rollback()
-            self.fly_con.rollback()
-            return            
 
-        try:
             with self.bank_con.cursor() as bank_cursor:
                 bank_cursor.execute("""
                     UPDATE bank SET amount = amount - {} 
