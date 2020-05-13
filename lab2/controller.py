@@ -25,7 +25,6 @@ class Controller:
             host="127.0.0.1", 
             port="5432"
             )        
-        self.prepared = False
     
     def show_tables(self):
         print("Hotel:")
@@ -33,8 +32,7 @@ class Controller:
             hotel_cursor.execute("SELECT * FROM hotel_booking;")
             answer_hotel = hotel_cursor.fetchall()
 
-        if not self.prepared:
-            self.hotel_con.rollback()
+        self.hotel_con.rollback()
 
         for line in answer_hotel:
             print("\t".join(map(lambda x: str(x).strip(), line)))
@@ -45,8 +43,7 @@ class Controller:
             fly_cursor.execute("SELECT * FROM fly_booking;")
             answer_fly = fly_cursor.fetchall()
 
-        if not self.prepared:
-            self.fly_con.rollback()
+        self.fly_con.rollback()
 
         for line in answer_fly:
             print("\t".join(map(lambda x: str(x).strip(), line)))
@@ -56,8 +53,7 @@ class Controller:
             bank_cursor.execute("SELECT * FROM bank;")
             answer_bank = bank_cursor.fetchall()
 
-        if not self.prepared:
-            self.bank_con.rollback()
+        self.bank_con.rollback()
 
         for line in answer_bank:
             print("\t".join(map(lambda x: str(x).strip(), line)))
@@ -78,48 +74,37 @@ class Controller:
             VALUES ('{}', '{}', '{}', '{}', '{}');
             """.format(client_name, fly_number, code_from, code_to, fly_date)
             )
-        self.prepared = True
 
         try:
             with self.bank_con.cursor() as bank_cursor:
                 bank_cursor.execute("""
                     UPDATE bank SET amount = amount - {} 
                     WHERE client_name='{}';""".format(price, client_name))
-                self.commit()
+                self.fly_con.commit()
+                self.hotel_con.commit()
+                self.bank_con.commit()
                 print("!OK")
         except:
-            
-            self.rollback()
+            self.fly_con.rollback()
+            self.hotel_con.rollback()
+            self.bank_con.rollback()
             print("!ERROR happens!") 
     
-    def commit(self):
-        self.fly_con.commit()
-        self.hotel_con.commit()
-        self.bank_con.commit()
-        self.prepared = False
-    
-    def rollback(self):
-        self.fly_con.rollback()
-        self.hotel_con.rollback()
-        self.bank_con.rollback()
-        self.prepared = False
-    
     def remove_row(self, client_name, amount=200):
-        if not self.prepared:
-            with self.hotel_con.cursor() as hotel_cursor:
-                hotel_cursor.execute("DELETE FROM hotel_booking WHERE client_name='{}';".format(client_name))
+        with self.hotel_con.cursor() as hotel_cursor:
+            hotel_cursor.execute("DELETE FROM hotel_booking WHERE client_name='{}';".format(client_name))
 
-            self.hotel_con.commit()
+        self.hotel_con.commit()
 
-            with self.fly_con.cursor() as fly_cursor:
-                fly_cursor.execute("DELETE FROM fly_booking WHERE client_name='{}';".format(client_name))
+        with self.fly_con.cursor() as fly_cursor:
+            fly_cursor.execute("DELETE FROM fly_booking WHERE client_name='{}';".format(client_name))
 
-            self.fly_con.commit()
+        self.fly_con.commit()
             
-            with self.bank_con.cursor() as bank_cursor:
-                bank_cursor.execute("""UPDATE bank SET amount = {}
+        with self.bank_con.cursor() as bank_cursor:
+            bank_cursor.execute("""UPDATE bank SET amount = {}
                                         WHERE client_name='{}';""".format(amount, client_name))
-                self.bank_con.commit()
+            self.bank_con.commit()
         
 
 if __name__ == "__main__":
