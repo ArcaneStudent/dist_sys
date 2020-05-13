@@ -88,18 +88,17 @@ class Controller:
         self.bank_con.rollback()
         current_balance = answer_bank[0]
 
-        if current_balance >= price:
-            try:
-                with self.bank_con.cursor() as bank_cursor:
-                    bank_cursor.execute("""UPDATE bank SET amount = {}
-                                        WHERE client_name='{}';""".format(current_balance - price, client_name))
-                    self.bank_con.commit()
-                    self.commit()
-                    print("!OK") 
-            except:
-                self.bank_con.rollback()
-                self.rollback()
-                print("!ERROR happens!") 
+        try:
+            with self.bank_con.cursor() as bank_cursor:
+                bank_cursor.execute("""UPDATE bank SET amount = {}
+                                    WHERE client_name='{}';""".format(current_balance - price, client_name))
+                self.bank_con.commit()
+                self.commit()
+                print("!OK")
+        except:
+            self.bank_con.rollback()
+            self.rollback()
+            print("!ERROR happens!") 
         
                 
     
